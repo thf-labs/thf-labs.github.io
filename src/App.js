@@ -11,17 +11,25 @@ apiClient.setApiKey('your-api-key'); // Optional: Set API key if required
 
 const GammaDataComponent = () => {
   const [tableData, setTableData] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const dealerGammaService = DealerGammaService.getInstance();
 
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const response = await dealerGammaService.getGammaData('SPY');
         const formattedData = dealerGammaService.transformGammaDataForTable(response);
         setTableData(formattedData);
+        setError(null);
       } catch (error) {
         console.error('Failed to fetch gamma data:', error);
+        setError(error.message || 'Failed to fetch gamma data. Please try again later.');
+        setTableData([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -34,6 +42,23 @@ const GammaDataComponent = () => {
     { key: 'strike', header: 'Strike', sortable: true },
     { key: 'gamma', header: 'Gamma', sortable: true }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p className="loading-text">Loading Gamma Data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <p className="error-message">{error}</p>
+      </div>
+    );
+  }
 
   return <THFtable data={tableData} columns={columns} />;
 };
