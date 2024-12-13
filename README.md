@@ -1,46 +1,123 @@
-# THF ES module Component React App Example
+# THF Labs Component Library Demo App
 
-This provides an example of usage for the THF's ES module component library distribution.
+This React application demonstrates the usage of THF Labs component library, showcasing real-world examples of components and services integration.
+
+## Getting Started
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Configure environment variables:
+   - Create a `.env` file in the root directory
+   - Add your THF API key:
+```
+REACT_APP_THF_API_KEY=your-api-key-here
+```
+
+3. Start the development server:
+```bash
+npm start
+```
+
+## Example Usage
+
+### Dealer Gamma Data Table
+
+This example shows how to fetch and display dealer gamma data using the THFtable component and DealerGammaService:
+
+```jsx
+import { useState, useEffect } from 'react';
+import { 
+  ApiClient,
+  DealerGammaService,
+  THFtable
+} from 'thf-labs';
+
+// Initialize API client (do this once in your app)
+const apiClient = ApiClient.getInstance();
+apiClient.setApiKey(process.env.REACT_APP_THF_API_KEY);
+
+const GammaDataComponent = () => {
+  const [tableData, setTableData] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const dealerGammaService = DealerGammaService.getInstance();
+
+  // Define sortable columns
+  const columns = [
+    { key: 'symbol', header: 'Symbol', sortable: true },
+    { key: 'zerogex', header: 'Zero GEX', sortable: true },
+    { key: 'strike', header: 'Strike', sortable: true },
+    { key: 'gamma', header: 'Gamma', sortable: true }
+  ];
+
+  // Fetch data when component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await dealerGammaService.getGammaData('SPY');
+        const formattedData = dealerGammaService.transformGammaDataForTable(response);
+        setTableData(formattedData);
+        setError(null);
+      } catch (error) {
+        setError(error.message || 'Failed to fetch gamma data');
+        setTableData([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p className="loading-text">Loading Gamma Data...</p>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="error-container">
+        <p className="error-message">{error}</p>
+      </div>
+    );
+  }
+
+  // Render table with data
+  return (
+    <THFtable 
+      data={tableData} 
+      columns={columns}
+      pageSize={15}
+      title="SPY Gamma Data"
+    />
+  );
+};
+
+export default GammaDataComponent;
+```
 
 ## Available Scripts
 
-In the project directory, you can run:
-
 ### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
 
 ### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Launches the test runner in interactive watch mode
 
 ### `npm run build`
+Builds the app for production to the `build` folder
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
