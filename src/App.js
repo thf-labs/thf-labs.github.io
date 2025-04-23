@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ApiClient,
   DealerGammaService,
   THFtable
-} from 'thf-labs';
+} from '@texashighfrequency/thf-labs';
 import './css/App.css';
 
 const apiClient = ApiClient.getInstance();
